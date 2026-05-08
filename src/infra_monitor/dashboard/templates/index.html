@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>infra-monitor</title>
+  <link rel="stylesheet" href="/static/app.css" />
+</head>
+<body>
+  <header class="topbar">
+    <h1>infra-monitor</h1>
+    <nav>
+      <button id="range-1h" class="range active" data-minutes="60">1h</button>
+      <button id="range-6h" class="range" data-minutes="360">6h</button>
+      <button id="range-24h" class="range" data-minutes="1440">24h</button>
+      <button id="drawer-toggle" class="drawer-toggle" aria-label="toggle host list">hosts</button>
+    </nav>
+  </header>
+
+  <main class="layout">
+    <aside class="sidebar" id="sidebar">
+      <h2>hosts</h2>
+      <ul id="host-list">
+        {% for host in hosts %}
+          <li><button class="host-btn" data-host-id="{{ host.id }}" data-host-name="{{ host.name }}">
+            <span class="host-name">{{ host.name }}</span>
+            <span class="host-kind">{{ host.kind }}</span>
+          </button></li>
+        {% else %}
+          <li class="empty">no hosts yet — run <code>make agent</code> or <code>make simulate</code></li>
+        {% endfor %}
+      </ul>
+    </aside>
+
+    <section class="content">
+      <h2 id="selected-host">select a host</h2>
+      <div class="charts">
+        <div id="chart-cpu_percent" class="chart"></div>
+        <div id="chart-memory_percent" class="chart"></div>
+        <div id="chart-disk_percent" class="chart"></div>
+        <div id="chart-network_bytes_recv" class="chart"></div>
+      </div>
+
+      <h2>recent alerts</h2>
+      <table id="alerts-table">
+        <thead><tr><th>fired_at</th><th>rule</th><th>host</th><th>value</th><th>severity</th></tr></thead>
+        <tbody></tbody>
+      </table>
+
+      <h2>recent remediations</h2>
+      <table id="remediations-table">
+        <thead><tr><th>fired_at</th><th>script</th><th>args</th><th>exit</th><th>duration_ms</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </section>
+  </main>
+
+  <script src="https://cdn.plot.ly/plotly-2.32.0.min.js" integrity="sha384-9C/4G2BcJfZUAkBoFzU+IwDJrvhRfxIb1g2qnYM2gcrcpprQfwwbJpzK04+x57EW" crossorigin="anonymous"></script>
+  <script src="/static/app.js" defer></script>
+</body>
+</html>

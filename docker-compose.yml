@@ -1,0 +1,34 @@
+services:
+  dashboard:
+    build: .
+    image: infra-monitor:local
+    container_name: infra-monitor-dashboard
+    ports:
+      - "8080:8080"
+    volumes:
+      - infra_monitor_data:/data
+    environment:
+      INFRA_MONITOR_DATABASE_URL: sqlite:////data/infra_monitor.db
+      INFRA_MONITOR_WEBHOOK_SECRET: ${INFRA_MONITOR_WEBHOOK_SECRET:-change-me}
+    command: ["dashboard", "--host", "0.0.0.0", "--port", "8080"]
+    restart: unless-stopped
+
+  agent:
+    build: .
+    image: infra-monitor:local
+    container_name: infra-monitor-agent
+    pid: host                      # see actual host processes
+    network_mode: host             # accurate net_io_counters
+    volumes:
+      - infra_monitor_data:/data
+      - /proc:/host/proc:ro
+    environment:
+      INFRA_MONITOR_DATABASE_URL: sqlite:////data/infra_monitor.db
+      INFRA_MONITOR_WEBHOOK_SECRET: ${INFRA_MONITOR_WEBHOOK_SECRET:-change-me}
+    command: ["agent"]
+    depends_on:
+      - dashboard
+    restart: unless-stopped
+
+volumes:
+  infra_monitor_data:

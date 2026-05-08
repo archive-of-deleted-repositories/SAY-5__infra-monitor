@@ -1,0 +1,48 @@
+# Sample alert rules. Run `cp monitor.example.yaml monitor.yaml` and adjust.
+# Env vars are expanded at load time: ${SLACK_WEBHOOK_URL} → from $SLACK_WEBHOOK_URL.
+
+hosts:
+  - name: localhost
+    kind: linux
+  # - name: i-0123456789abcdef0
+  #   kind: ec2
+  #   region: us-east-1
+
+rules:
+  - name: cpu-saturation
+    metric: cpu_percent
+    condition: ">90"
+    duration_seconds: 60        # condition must hold this long before firing
+    severity: critical
+    actions:
+      - kind: webhook
+        url: ${SLACK_WEBHOOK_URL}
+        cooldown_seconds: 300
+      - kind: remediation
+        script: scripts/restart_service.sh
+        args: [nginx]
+        cooldown_seconds: 300
+
+  - name: memory-pressure
+    metric: memory_percent
+    condition: ">85"
+    duration_seconds: 120
+    severity: warning
+    actions:
+      - kind: webhook
+        url: ${SLACK_WEBHOOK_URL}
+        cooldown_seconds: 600
+
+  - name: disk-near-full
+    metric: disk_percent
+    condition: ">85"
+    duration_seconds: 0          # fire on first hit; disk pressure isn't flappy
+    severity: warning
+    actions:
+      - kind: webhook
+        url: ${SLACK_WEBHOOK_URL}
+        cooldown_seconds: 1800
+      - kind: remediation
+        script: scripts/disk_cleanup.sh
+        args: ["14"]
+        cooldown_seconds: 1800
